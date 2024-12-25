@@ -321,6 +321,171 @@
 
     alert(`Resultat: ${result}`);
 }
+		function calculateOverloeb() {
+    const h = parseFloat(document.getElementById('overloebHeight').value);
+    const b = parseFloat(document.getElementById('overloebWidth').value);
+
+    if (isNaN(h) || isNaN(b)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    let result = 'Ikke tilladt';
+
+    if (h === 0) {
+        result = 'Kategori B';
+    } else if (h <= 0.2 * b) {
+        result = 'Kategori D';
+    }
+
+    alert(`Resultat: ${result}`);
+}
+		function calculateNedloeb() {
+    const h = parseFloat(document.getElementById('nedloebHeight').value);
+    const t = parseFloat(document.getElementById('nedloebThickness').value);
+
+    if (isNaN(h) || isNaN(t)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    let result = 'Ikke tilladt';
+
+    if (h === 0) {
+        result = 'Kategori B';
+    } else if (t <= 3) {
+        if (h <= 0.1 * t) {
+            result = 'Kategori C';
+        } else if (h <= 0.25 * t) {
+            result = 'Kategori D';
+        }
+    } else {
+        if (h <= Math.min(0.05 * t, 0.5)) {
+            result = 'Kategori B';
+        } else if (h <= Math.min(0.1 * t, 1)) {
+            result = 'Kategori C';
+        } else if (h <= Math.min(0.25 * t, 2)) {
+            result = 'Kategori D';
+        }
+    }
+
+    alert(`Resultat: ${result}`);
+}
+		function calculateUligeKatetre() {
+    const z1 = parseFloat(document.getElementById('uligeZ1').value);
+    const z2 = parseFloat(document.getElementById('uligeZ2').value);
+    const aA = parseFloat(document.getElementById('uligeAA').value);
+
+    if (isNaN(z1) || isNaN(z2) || isNaN(aA)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    const h = Math.abs(z1 - z2); // Sørg for positiv værdi for h
+    let result = 'Ikke tilladt';
+
+    if (h <= 0.15 * aA + 1.5) {
+        result = 'Kategori B';
+    } else if (h <= 0.15 * aA + 2) {
+        result = 'Kategori C';
+    } else if (h <= 0.2 * aA + 2) {
+        result = 'Kategori D';
+    }
+
+    alert(`Resultat: ${result}`);
+}
+		function calculateIndadhvaelving() {
+    const h = parseFloat(document.getElementById('indadhvaelvingHeight').value);
+    const t = parseFloat(document.getElementById('indadhvaelvingThickness').value);
+
+    if (isNaN(h) || isNaN(t)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    let result = 'Ikke tilladt';
+
+    if (h === 0) {
+        result = 'Kategori B';
+    } else if (t <= 3) {
+        if (h <= 0.1 * t) {
+            result = 'Kategori C';
+        } else if (h <= 0.1 * t + 0.2) {
+            result = 'Kategori D';
+        }
+    } else {
+        if (h <= Math.min(0.05 * t, 0.5)) {
+            result = 'Kategori B';
+        } else if (h <= Math.min(0.1 * t, 1)) {
+            result = 'Kategori C';
+        } else if (h <= Math.min(0.2 * t, 2)) {
+            result = 'Kategori D';
+        }
+    }
+
+    alert(`Resultat: ${result}`);
+}
+		function calculateUtilstraekkeligtAMaal() {
+    const t = parseFloat(document.getElementById('utilstraekkeligtThickness').value);
+    const a = parseFloat(document.getElementById('utilstraekkeligtA').value);
+    const aA = parseFloat(document.getElementById('utilstraekkeligtAA').value);
+
+    if (isNaN(t) || isNaN(a) || isNaN(aA)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    if (aA > a) {
+        alert('Der er ikke et utilstrækkeligt a-mål.');
+        return;
+    }
+
+    const h = Math.abs(a - aA); // Sørg for positiv værdi for h
+    let result = 'Ikke tilladt';
+
+    if (h === 0) {
+        result = 'Kategori B';
+    } else if (t <= 3) {
+        if (h <= 0.2) {
+            result = 'Kategori C';
+        } else if (h <= 0.1 * a + 0.2) {
+            result = 'Kategori D';
+        }
+    } else {
+        if (h <= Math.min(0.1 * a + 0.3, 1)) {
+            result = 'Kategori C';
+        } else if (h <= Math.min(0.2 * a + 0.3, 2)) {
+            result = 'Kategori D';
+        }
+    }
+
+    alert(`Resultat: ${result}`);
+}
+		function calculateUforholdsmaessigtAMaal() {
+    const a = parseFloat(document.getElementById('uforholdsmaessigtA').value);
+    const aA = parseFloat(document.getElementById('uforholdsmaessigtAA').value);
+
+    if (isNaN(a) || isNaN(aA)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    if (aA < a) {
+        alert('Dette er et utilstrækkeligt a-mål. Beregn i nr. 1.20.');
+        return;
+    }
+
+    const h = Math.abs(aA - a); // Sørg for positiv værdi for h
+    let result = 'Kategori D'; // Standard som tilladt
+
+    if (h <= Math.min(0.15 * a + 1, 3)) {
+        result = 'Kategori B';
+    } else if (h <= Math.min(0.2 * a + 1, 4)) {
+        result = 'Kategori C';
+    }
+
+    alert(`Resultat: ${result}`);
+}
 	</script>
 </head>
 <body>
@@ -438,7 +603,7 @@
 	<img src="https://i.imgur.com/uDtmMJq.png" alt="Diagram af Gennemløb">
     <div class="content">
         <h2>Gennemløb</h2>
-	<label for="gennemloebThickness">Tykkelse (t) af materiale (mm):</label><br>
+		<label for="gennemloebThickness">Tykkelse (t) af materiale (mm):</label><br>
         <input type="number" id="gennemloebThickness" placeholder="Indtast tykkelse"><br><br>
 
         <label for="gennemloebHeight">Højde (h) af gennemløb (mm):</label><br>
@@ -453,7 +618,7 @@
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
-        Forkert overgang (1.14)
+        Forkert overgang (1.12)
     </div>
 	        <img src="https://i.imgur.com/XBKdEjU.png" alt="Diagram af Forkert overgang">
     <div class="content">
@@ -469,6 +634,116 @@
         <input type="number" id="overgangAngle" placeholder="Indtast vinkel"><br><br>
 
         <button onclick="calculateForkertOvergang()">Beregn</button><br><br>
+
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Overløb af svejsemetal (1.13)
+    </div>
+	        <img src="https://i.imgur.com/rKhjHuO.png" alt="Diagram af Overløb af svejsemetal">
+    <div class="content">
+        <h2>Overløb af svejsemetal</h2>
+        <label for="overloebHeight">Højde (h) af svejsemetal (mm):</label><br>
+        <input type="number" id="overloebHeight" placeholder="Indtast højde"><br><br>
+
+        <label for="overloebWidth">Bredde (b) af svejsemetal (mm):</label><br>
+        <input type="number" id="overloebWidth" placeholder="Indtast bredde"><br><br>
+
+        <button onclick="calculateOverloeb()">Beregn</button><br><br>
+
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Nedløbet Svejsemetal og Manglende opfyldning (1.14)
+    </div>
+	<img src="https://i.imgur.com/6uWLu2Y.png" alt="Diagram af Nedløbet Svejsemetal og Manglende opfyldning">
+    <div class="content">
+        <h2>Nedløbet Svejsemetal og Manglende opfyldning</h2>
+        <label for="nedloebThickness">Tykkelse (t) af materiale (mm):</label><br>
+        <input type="number" id="nedloebThickness" placeholder="Indtast tykkelse"><br><br>
+
+        <label for="nedloebHeight">Højde (h) af nedløbet svejsemetal (mm):</label><br>
+        <input type="number" id="nedloebHeight" placeholder="Indtast højde"><br><br>
+
+        <button onclick="calculateNedloeb()">Beregn</button><br><br>
+
+
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Ulige store katetre i kantsøm (1.16)
+    </div>
+	        <img src="https://i.imgur.com/IvMuumF.png" alt="Diagram af Ulige store katetre i kantsøm">
+    <div class="content">
+        <h2>Ulige store katetre i kantsøm</h2>
+        <label for="uligeZ1">Benlængde z1 (mm):</label><br>
+        <input type="number" id="uligeZ1" placeholder="Indtast z1"><br><br>
+
+        <label for="uligeZ2">Benlængde z2 (mm):</label><br>
+        <input type="number" id="uligeZ2" placeholder="Indtast z2"><br><br>
+
+        <label for="uligeAA">Målt a-mål (aA) (mm):</label><br>
+        <input type="number" id="uligeAA" placeholder="Indtast aA"><br><br>
+
+        <button onclick="calculateUligeKatetre()">Beregn</button><br><br>
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Indadhvælving i roden (1.17)
+    </div>
+	        <img src="https://i.imgur.com/Nu0UhcX.png" alt="Diagram af Indadhvælving i roden">
+    <div class="content">
+        <h2>Indadhvælving i roden</h2>
+        <label for="indadhvaelvingThickness">Tykkelse (t) af materiale (mm):</label><br>
+        <input type="number" id="indadhvaelvingThickness" placeholder="Indtast tykkelse"><br><br>
+
+        <label for="indadhvaelvingHeight">Højde (h) af indadhvælving (mm):</label><br>
+        <input type="number" id="indadhvaelvingHeight" placeholder="Indtast højde"><br><br>
+
+        <button onclick="calculateIndadhvaelving()">Beregn</button><br><br>
+
+
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Utilstrækkeligt a-mål (1.20)
+    </div>
+	
+        <img src="https://i.imgur.com/zsSsFJr.png" alt="Diagram af Utilstrækkeligt a-mål">
+    <div class="content">
+        <h2>Utilstrækkeligt a-mål</h2>
+        <label for="utilstraekkeligtThickness">Tykkelse (t) af materiale (mm):</label><br>
+        <input type="number" id="utilstraekkeligtThickness" placeholder="Indtast tykkelse"><br><br>
+
+        <label for="utilstraekkeligtA">Nominelt a-mål (a) (mm):</label><br>
+        <input type="number" id="utilstraekkeligtA" placeholder="Indtast a-mål"><br><br>
+
+        <label for="utilstraekkeligtAA">Målt a-mål (aA) (mm):</label><br>
+        <input type="number" id="utilstraekkeligtAA" placeholder="Indtast målt a-mål"><br><br>
+
+        <button onclick="calculateUtilstraekkeligtAMaal()">Beregn</button><br><br>
+
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Uforholdsmæssigt stort a-mål (1.21)
+    </div>
+	        <img src="https://i.imgur.com/ezA48iF.png" alt="Diagram af Uforholdsmæssigt stort a-mål">
+    <div class="content">
+        <h2>Uforholdsmæssigt stort a-mål</h2>
+        <label for="uforholdsmaessigtA">Nominelt a-mål (a) (mm):</label><br>
+        <input type="number" id="uforholdsmaessigtA" placeholder="Indtast a-mål"><br><br>
+
+        <label for="uforholdsmaessigtAA">Målt a-mål (aA) (mm):</label><br>
+        <input type="number" id="uforholdsmaessigtAA" placeholder="Indtast målt a-mål"><br><br>
+
+        <button onclick="calculateUforholdsmaessigtAMaal()">Beregn</button><br><br>
 
     </div>
 </li>
