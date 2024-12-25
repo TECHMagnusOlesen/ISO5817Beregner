@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISO 5817 Beregner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #333;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .menu {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 0;
+            list-style-type: none;
+        }
+
+        .menu-item {
+            background-color: #f4f4f4;
+            margin: 10px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .menu-item-header {
+            padding: 15px;
+            background-color: #f4f4f4;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .menu-item-header:hover {
+            background-color: #ddd;
+        }
+
+        .content {
+            display: none;
+            margin-top: 0;
+            padding: 10px;
+            background-color: #eee;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .menu-item.active .content {
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+    <script>
+        function toggleContent(event) {
+            const header = event.currentTarget;
+            const item = header.closest('.menu-item');
+            const menuItems = document.querySelectorAll('.menu-item');
+
+            menuItems.forEach(menuItem => {
+                if (menuItem !== item) {
+                    menuItem.classList.remove('active');
+                }
+            });
+
+            item.classList.toggle('active');
+        }
+
+        function selectWeldType() {
+            const weldType = document.getElementById('weldType').value;
+            const parameters = document.getElementById('parameters');
+            const thicknessField = document.getElementById('thicknessField');
+            const aAField = document.getElementById('aAField');
+
+            if (weldType === 'butt') {
+                parameters.classList.remove('hidden');
+                thicknessField.classList.remove('hidden');
+                aAField.classList.add('hidden');
+            } else if (weldType === 'fillet') {
+                parameters.classList.remove('hidden');
+                thicknessField.classList.add('hidden');
+                aAField.classList.remove('hidden');
+            } else {
+                parameters.classList.add('hidden');
+            }
+        }
+
+        function calculateCraterPore() {
+            const t = parseFloat(document.getElementById('thickness').value);
+            const h = parseFloat(document.getElementById('depth').value);
+            const d = parseFloat(document.getElementById('width').value);
+            const weldType = document.getElementById('weldType').value;
+
+            if (isNaN(h) || isNaN(d) || (weldType === 'butt' && isNaN(t))) {
+                alert('Indtast venligst alle værdier korrekt.');
+                return;
+            }
+
+            let result = 'Ikke tilladt';
+
+            if (weldType === 'fillet') {
+                const aA = parseFloat(document.getElementById('aA').value);
+                if (isNaN(aA)) {
+                    alert('Indtast venligst A-mål korrekt for kantsøm.');
+                    return;
+                }
+
+                if (h === 0 && d === 0) {
+                    result = 'Kategori B';
+                } else if (t > 3) {
+                    if (h <= Math.min(0.1 * aA, 1) && d <= Math.min(0.2 * aA, 2)) {
+                        result = 'Kategori C';
+                    } else if (h <= Math.min(0.2 * aA, 2) && d <= Math.min(0.3 * aA, 3)) {
+                        result = 'Kategori D';
+                    }
+                } else if (t <= 3) {
+                    if (h <= Math.min(0.1 * aA, 1) && d <= Math.min(0.2 * aA, 2)) {
+                        result = 'Kategori C';
+                    } else if (h <= 0.2 * aA && d <= 0.3 * aA) {
+                        result = 'Kategori D';
+                    }
+                }
+            } else if (weldType === 'butt') {
+                if (h === 0 && d === 0) {
+                    result = 'Kategori B';
+                } else if (t > 3) {
+                    if (h <= Math.min(0.1 * t, 1) && d <= Math.min(0.2 * t, 2)) {
+                        result = 'Kategori C';
+                    } else if (h <= Math.min(0.2 * t, 2) && d <= Math.min(0.3 * t, 3)) {
+                        result = 'Kategori D';
+                    }
+                } else if (t <= 3) {
+                    if (h <= Math.min(0.1 * t, 1) && d <= Math.min(0.2 * t, 2)) {
+                        result = 'Kategori C';
+                    } else if (h <= 0.2 * t && d <= 0.3 * t) {
+                        result = 'Kategori D';
+                    }
+                }
+            }
+
+            alert(`${weldType === 'fillet' ? 'Kantsøm' : 'Stumpsøm'} Resultat: ${result}`);
+        }
+		function calculateSideNotch() {
+	
+            const t = parseFloat(document.getElementById('sideNotchThickness').value);
+            const h = parseFloat(document.getElementById('sideNotchHeight').value);
+
+            if (isNaN(t) || isNaN(h)) {
+                alert('Indtast venligst alle værdier korrekt.');
+                return;
+            }
+
+            let result = 'Ikke tilladt';
+
+            if (t <= 3) {
+                if (h <= 0.1 * t) {
+                    result = 'Kategori C';
+                }
+                if (h <= 0.2 * t) {
+                    result = 'Kategori D';
+                }
+            } else {
+                if (h <= Math.min(0.05 * t, 0.5)) {
+                    result = 'Kategori B';
+                } else if (h <= Math.min(0.1 * t, 0.5)) {
+                    result = 'Kategori C';
+                } else if (h <= Math.min(0.2 * t, 1)) {
+                    result = 'Kategori D';
+                }
+            }
+
+            alert(`Resultat: ${result}`);
+        }
+		function calculateShrinkageGroove() {
+            const t = parseFloat(document.getElementById('shrinkageThickness').value);
+            const h = parseFloat(document.getElementById('shrinkageHeight').value);
+
+            if (isNaN(t) || isNaN(h)) {
+                alert('Indtast venligst alle værdier korrekt.');
+                return;
+            }
+
+            let result = 'Ikke tilladt';
+
+            if (t <= 3) {
+                if (h <= 0.1 * t) {
+                    result = 'Kategori C';
+                }
+                if (h <= 0.1 * t + 0.2) {
+                    result = 'Kategori D';
+                }
+            } else {
+                if (h <= Math.min(0.05 * t, 0.5)) {
+                    result = 'Kategori B';
+                } else if (h <= Math.min(0.1 * t, 1)) {
+                    result = 'Kategori C';
+                } else if (h <= Math.min(0.2 * t, 2)) {
+                    result = 'Kategori D';
+                }
+            }
+
+            alert(`Resultat: ${result}`);
+        }
+		function calculateOvervulst() {
+    const h = parseFloat(document.getElementById('overvulstHeight').value);
+    const b = parseFloat(document.getElementById('overvulstWidth').value);
+
+    if (isNaN(h) || isNaN(b)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    let result = 'Ikke tilladt';
+
+    if (h <= Math.min(0.1 * b + 1, 5)) {
+        result = 'Kategori B';
+    } else if (h <= Math.min(0.15 * b + 1, 7)) {
+        result = 'Kategori C';
+    } else if (h <= Math.min(0.25 * b + 1, 10)) {
+        result = 'Kategori D';
+    }
+
+    alert(`Resultat: ${result}`);
+}
+		function calculateKonveks() {
+    const h = parseFloat(document.getElementById('konveksHeight').value);
+    const b = parseFloat(document.getElementById('konveksWidth').value);
+
+    if (isNaN(h) || isNaN(b)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    let result = 'Ikke tilladt';
+
+    if (h <= Math.min(0.1 * b + 1, 3)) {
+        result = 'Kategori B';
+    } else if (h <= Math.min(0.15 * b + 1, 4)) {
+        result = 'Kategori C';
+    } else if (h <= Math.min(0.25 * b + 1, 5)) {
+        result = 'Kategori D';
+    }
+
+    alert(`Resultat: ${result}`);
+}
+		function calculateGennemloeb() {
+    const h = parseFloat(document.getElementById('gennemloebHeight').value);
+    const b = parseFloat(document.getElementById('gennemloebWidth').value);
+    const t = parseFloat(document.getElementById('gennemloebThickness').value);
+
+    if (isNaN(h) || isNaN(b) || isNaN(t)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
+
+    let result = 'Ikke tilladt';
+
+    if (t <= 3) {
+        if (h <= 0.1 * b + 1) {
+            result = 'Kategori B';
+        } else if (h <= 0.3 * b + 1) {
+            result = 'Kategori C';
+        } else if (h <= 0.6 * b + 1) {
+            result = 'Kategori D';
+        }
+    } else {
+        if (h <= Math.min(0.2 * b + 1, 3)) {
+            result = 'Kategori B';
+        } else if (h <= Math.min(0.45 * b + 1, 4)) {
+            result = 'Kategori C';
+        } else if (h <= Math.min(1 * b + 1, 5)) {
+            result = 'Kategori D';
+        }
+    }
+
+    alert(`Resultat: ${result}`);
+}
+		function calculateForkertOvergang() {
+    const a = parseFloat(document.getElementById('overgangAngle').value);
+    const weldType = document.getElementById('overgangWeldType').value;
+
+    if (isNaN(a) || weldType === '') {
+        alert('Indtast venligst alle værdier korrekt og vælg svejsetype.');
+        return;
+    }
+
+    let result = 'Ikke tilladt';
+
+    if (weldType === 'butt') { // Stumpsøm
+        if (a >= 150) {
+            result = 'Kategori B';
+        } else if (a >= 110) {
+            result = 'Kategori C';
+        } else if (a >= 90) {
+            result = 'Kategori D';
+        }
+    } else if (weldType === 'fillet') { // Kantsøm
+        if (a >= 110) {
+            result = 'Kategori B';
+        } else if (a >= 100) {
+            result = 'Kategori C';
+        } else if (a >= 90) {
+            result = 'Kategori D';
+        }
+    }
+
+    alert(`Resultat: ${result}`);
+}
+	</script>
+</head>
+<body>
+    <header>
+        <h1>ISO 5817 Beregner</h1>
+    </header>
+
+    <ul class="menu">
+        <li class="menu-item">
+            <div class="menu-item-header" onclick="toggleContent(event)">
+                Åben Kraterpore (1.4)
+            </div>
+			<img src="https://i.imgur.com/e8xLEXU.png" alt="Diagram af Åben Kraterpore">
+            <div class="content">
+                <label for="weldType">Vælg svejsetype:</label><br>
+                <select id="weldType" onchange="selectWeldType()">
+                    <option value="">-- Vælg --</option>
+                    <option value="butt">Stumpsøm</option>
+                    <option value="fillet">Kantsøm</option>
+                </select><br><br>
+
+                <div id="parameters" class="hidden">
+                    <div id="thicknessField">
+                        <label for="thickness">Tykkelse (t) af materiale (mm):</label><br>
+                        <input type="number" id="thickness" placeholder="Indtast tykkelse"><br><br>
+                    </div>
+
+                    <label for="depth">Dybde (h) af kraterpore (mm):</label><br>
+                    <input type="number" id="depth" placeholder="Indtast dybde"><br><br>
+
+                    <label for="width">Bredde (d) af kraterpore (mm):</label><br>
+                    <input type="number" id="width" placeholder="Indtast bredde"><br><br>
+
+                    <div id="aAField" class="hidden">
+                        <label for="aA">Afmålt A-mål (aA) (mm):</label><br>
+                        <input type="number" id="aA" placeholder="Indtast A-mål"><br><br>
+                    </div>
+
+                    <button onclick="calculateCraterPore()">Beregn</button>
+                </div>
+
+
+            </div>
+        </li>
+        <li class="menu-item">
+            <div class="menu-item-header" onclick="toggleContent(event)">
+                Sidekærv (1.7)
+            </div>
+			<img src="https://i.imgur.com/CWEyBYH.png" alt='Diagram af Sidekærv'>
+            <div class="content">
+                <h2>Kontinuert sidekærv eller Lokal Sidekærv (Korte svejsefejl)</h2>
+                <label for="sideNotchThickness">Tykkelse (t) af materiale (mm):</label><br>
+                <input type="number" id="sideNotchThickness" placeholder="Indtast tykkelse"><br><br>
+
+                <label for="sideNotchHeight">Højde (h) af sidekærv (mm):</label><br>
+                <input type="number" id="sideNotchHeight" placeholder="Indtast højde"><br><br>
+
+                <button onclick="calculateSideNotch()">Beregn</button>
+            </div>
+        </li>
+		<li class="menu-item">
+			<div class="menu-item-header" onclick="toggleContent(event)">
+				Krympefuge(rodkærv)(1.8)
+			</div>
+			<img src="https://i.imgur.com/BhkrLfe.png" alt="Diagram af Krympefuge">
+			<div class="content">
+				<h2>Krympefuge (Rodkærv)</h2>
+				<label for="shrinkageThickness">Tykkelse (t) af materiale (mm):</label><br>
+				<input type="number" id="shrinkageThickness" placeholder="Indtast tykkelse"><br><br>
+
+				<label for="shrinkageHeight">Højde (h) af krympefuge (mm):</label><br>
+				<input type="number" id="shrinkageHeight" placeholder="Indtast højde"><br><br>
+
+				<button onclick="calculateShrinkageGroove()">Beregn</button><br><br>
+			</div>
+		</li>
+		<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Overvulst Stumpsøm (1.9)
+    </div>
+	        <img src="https://i.imgur.com/nrUAcUe.png" alt="Diagram af Overvulst">
+    <div class="content">
+        <h2>Overvulst Stumpsøm</h2>
+        <label for="overvulstHeight">Højde (h) af overvulst (mm):</label><br>
+        <input type="number" id="overvulstHeight" placeholder="Indtast højde"><br><br>
+
+        <label for="overvulstWidth">Bredde (b) af overvulst (mm):</label><br>
+        <input type="number" id="overvulstWidth" placeholder="Indtast bredde"><br><br>
+
+        <button onclick="calculateOvervulst()">Beregn</button><br><br>
+
+
+    </div>
+</li>
+	<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Konveks sømoverflade (1.10)
+    </div>
+	<img src="https://i.imgur.com/dtfGTAt.png" alt="Diagram af Konveks sømoverflade">
+    <div class="content">
+        <h2>Konveks sømoverflade</h2>
+        <label for="konveksHeight">Højde (h) af sømoverflade (mm):</label><br>
+        <input type="number" id="konveksHeight" placeholder="Indtast højde"><br><br>
+
+        <label for="konveksWidth">Bredde (b) af sømoverflade (mm):</label><br>
+        <input type="number" id="konveksWidth" placeholder="Indtast bredde"><br><br>
+
+        <button onclick="calculateKonveks()">Beregn</button><br><br>
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Gennemløb (1.11)
+    </div>
+	<img src="https://i.imgur.com/uDtmMJq.png" alt="Diagram af Gennemløb">
+    <div class="content">
+        <h2>Gennemløb</h2>
+        <label for="gennemloebHeight">Højde (h) af gennemløb (mm):</label><br>
+        <input type="number" id="gennemloebHeight" placeholder="Indtast højde"><br><br>
+
+        <label for="gennemloebWidth">Bredde (b) af gennemløb (mm):</label><br>
+        <input type="number" id="gennemloebWidth" placeholder="Indtast bredde"><br><br>
+
+        <button onclick="calculateGennemloeb()">Beregn</button><br><br>
+
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Forkert overgang (1.14)
+    </div>
+	        <img src="https://i.imgur.com/XBKdEjU.png" alt="Diagram af Forkert overgang">
+    <div class="content">
+        <h2>Forkert overgang (mellem grundmaterialets overflade og svejsesøm)</h2>
+        <label for="overgangWeldType">Vælg svejsetype:</label><br>
+        <select id="overgangWeldType">
+            <option value="">-- Vælg --</option>
+            <option value="butt">Stumpsøm</option>
+            <option value="fillet">Kantsøm</option>
+        </select><br><br>
+
+        <label for="overgangAngle">Vinkel (a) af overgang (grader):</label><br>
+        <input type="number" id="overgangAngle" placeholder="Indtast vinkel"><br><br>
+
+        <button onclick="calculateForkertOvergang()">Beregn</button><br><br>
+
+    </div>
+</li>
+    </ul>
+</body>
+</html>
