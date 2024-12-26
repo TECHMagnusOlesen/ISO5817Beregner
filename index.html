@@ -65,6 +65,20 @@
             max-width: 100%;
             height: auto;
         }
+		.menu-item.active {
+    background-color: #333; /* Mørkegrå baggrund */
+    color: white; /* Tekstfarve for kontrast */
+}
+
+.menu-item.active .menu-item-header {
+    background-color: #333; /* Mørkegrå baggrund for headeren */
+    color: white; /* Tekstfarve for kontrast */
+}
+
+.menu-item.active .content {
+    background-color: #444; /* En lidt lysere grå for indholdsområdet */
+    color: white; /* Tekstfarve for kontrast */
+}
     </style>
     <script>
         function toggleContent(event) {
@@ -100,122 +114,208 @@
             }
         }
 
-        function calculateCraterPore() {
-            const t = parseFloat(document.getElementById('thickness').value);
-            const h = parseFloat(document.getElementById('depth').value);
-            const d = parseFloat(document.getElementById('width').value);
-            const weldType = document.getElementById('weldType').value;
+		function toggleAAField() {
+    const weldType = document.getElementById('weldType').value;
+    const aAField = document.getElementById('aAField');
 
-            if (isNaN(h) || isNaN(d) || (weldType === 'butt' && isNaN(t))) {
-                alert('Indtast venligst alle værdier korrekt.');
-                return;
-            }
+    if (weldType === 'fillet') {
+        aAField.style.display = 'block'; // Vis A-mål for Kantsøm
+    } else {
+        aAField.style.display = 'none'; // Skjul A-mål for Stumpsøm
+    }
+}
 
-            let result = 'Ikke tilladt';
+		function calculateCraterPore() {
+    const t = parseFloat(document.getElementById('thickness').value);
+    const h = parseFloat(document.getElementById('depth').value);
+    const d = parseFloat(document.getElementById('width').value);
+    const weldType = document.getElementById('weldType').value;
 
-            if (weldType === 'fillet') {
-                const aA = parseFloat(document.getElementById('aA').value);
-                if (isNaN(aA)) {
-                    alert('Indtast venligst A-mål korrekt for kantsøm.');
-                    return;
-                }
+    if (isNaN(t) || isNaN(h) || isNaN(d) || (!weldType)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
 
-                if (h === 0 && d === 0) {
-                    result = 'Kategori B';
-                } else if (t > 3) {
-                    if (h <= Math.min(0.1 * aA, 1) && d <= Math.min(0.2 * aA, 2)) {
-                        result = 'Kategori C';
-                    } else if (h <= Math.min(0.2 * aA, 2) && d <= Math.min(0.3 * aA, 3)) {
-                        result = 'Kategori D';
-                    }
-                } else if (t <= 3) {
-                    if (h <= Math.min(0.1 * aA, 1) && d <= Math.min(0.2 * aA, 2)) {
-                        result = 'Kategori C';
-                    } else if (h <= 0.2 * aA && d <= 0.3 * aA) {
-                        result = 'Kategori D';
-                    }
-                }
-            } else if (weldType === 'butt') {
-                if (h === 0 && d === 0) {
-                    result = 'Kategori B';
-                } else if (t > 3) {
-                    if (h <= Math.min(0.1 * t, 1) && d <= Math.min(0.2 * t, 2)) {
-                        result = 'Kategori C';
-                    } else if (h <= Math.min(0.2 * t, 2) && d <= Math.min(0.3 * t, 3)) {
-                        result = 'Kategori D';
-                    }
-                } else if (t <= 3) {
-                    if (h <= Math.min(0.1 * t, 1) && d <= Math.min(0.2 * t, 2)) {
-                        result = 'Kategori C';
-                    } else if (h <= 0.2 * t && d <= 0.3 * t) {
-                        result = 'Kategori D';
-                    }
-                }
-            }
-
-            alert(`${weldType === 'fillet' ? 'Kantsøm' : 'Stumpsøm'} Resultat: ${result}`);
+    let aA = null;
+    if (weldType === 'fillet') {
+        aA = parseFloat(document.getElementById('aA').value);
+        if (isNaN(aA)) {
+            alert('Indtast venligst A-mål korrekt for kantsøm.');
+            return;
         }
+    }
+
+    let result = '';
+    let range = ''; // Beregnede grænseværdier
+
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
+    }
+
+    if (weldType === 'fillet') {
+        if (h === 0 && d === 0) {
+            result = 'Kategori B';
+            range = 'h = 0 og d = 0';
+        } else if (t > 3) {
+            if (h <= format(Math.min(0.1 * aA, 1)) && d <= format(Math.min(0.2 * aA, 2))) {
+                result = 'Kategori C';
+                range = `h ≤ ${format(Math.min(0.1 * aA, 1))}, d ≤ ${format(Math.min(0.2 * aA, 2))}`;
+            } else if (h <= format(Math.min(0.2 * aA, 2)) && d <= format(Math.min(0.3 * aA, 3))) {
+                result = 'Kategori D';
+                range = `h ≤ ${format(Math.min(0.2 * aA, 2))}, d ≤ ${format(Math.min(0.3 * aA, 3))}`;
+            }
+        } else if (t <= 3) {
+            if (h <= format(Math.min(0.1 * aA, 1)) && d <= format(Math.min(0.2 * aA, 2))) {
+                result = 'Kategori C';
+                range = `h ≤ ${format(Math.min(0.1 * aA, 1))}, d ≤ ${format(Math.min(0.2 * aA, 2))}`;
+            } else if (h <= format(0.2 * aA) && d <= format(0.3 * aA)) {
+                result = 'Kategori D';
+                range = `h ≤ ${format(0.2 * aA)}, d ≤ ${format(0.3 * aA)}`;
+            }
+        }
+    } else if (weldType === 'butt') {
+        if (h === 0 && d === 0) {
+            result = 'Kategori B';
+            range = 'h = 0 og d = 0';
+        } else if (t > 3) {
+            if (h <= format(Math.min(0.1 * t, 1)) && d <= format(Math.min(0.2 * t, 2))) {
+                result = 'Kategori C';
+                range = `h ≤ ${format(Math.min(0.1 * t, 1))}, d ≤ ${format(Math.min(0.2 * t, 2))}`;
+            } else if (h <= format(Math.min(0.2 * t, 2)) && d <= format(Math.min(0.3 * t, 3))) {
+                result = 'Kategori D';
+                range = `h ≤ ${format(Math.min(0.2 * t, 2))}, d ≤ ${format(Math.min(0.3 * t, 3))}`;
+            }
+        } else if (t <= 3) {
+            if (h <= format(Math.min(0.1 * t, 1)) && d <= format(Math.min(0.2 * t, 2))) {
+                result = 'Kategori C';
+                range = `h ≤ ${format(Math.min(0.1 * t, 1))}, d ≤ ${format(Math.min(0.2 * t, 2))}`;
+            } else if (h <= format(0.2 * t) && d <= format(0.3 * t)) {
+                result = 'Kategori D';
+                range = `h ≤ ${format(0.2 * t)}, d ≤ ${format(0.3 * t)}`;
+            }
+        }
+    }
+
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('qualityLevel');
+    const qualityResult = document.getElementById('qualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
+}
 		function calculateSideNotch() {
-	
-            const t = parseFloat(document.getElementById('sideNotchThickness').value);
-            const h = parseFloat(document.getElementById('sideNotchHeight').value);
+    const t = parseFloat(document.getElementById('sideNotchThickness').value);
+    const h = parseFloat(document.getElementById('sideNotchHeight').value);
 
-            if (isNaN(t) || isNaN(h)) {
-                alert('Indtast venligst alle værdier korrekt.');
-                return;
-            }
+    if (isNaN(t) || isNaN(h)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
 
-            let result = 'Ikke tilladt';
+    let result = '';
+    let range = ''; // Beregnede grænseværdier
 
-            if (t <= 3) {
-                if (h <= 0.1 * t) {
-                    result = 'Kategori C';
-                }
-                if (h <= 0.2 * t) {
-                    result = 'Kategori D';
-                }
-            } else {
-                if (h <= Math.min(0.05 * t, 0.5)) {
-                    result = 'Kategori B';
-                } else if (h <= Math.min(0.1 * t, 0.5)) {
-                    result = 'Kategori C';
-                } else if (h <= Math.min(0.2 * t, 1)) {
-                    result = 'Kategori D';
-                }
-            }
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
+    }
 
-            alert(`Resultat: ${result}`);
+    if (t <= 3) {
+        const maxC = format(0.1 * t);
+        const maxD = format(0.2 * t);
+        if (h <= maxC) {
+            result = 'Kategori C';
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
+            result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
+    } else {
+        const maxB = format(Math.min(0.05 * t, 0.5));
+        const maxC = format(Math.min(0.1 * t, 0.5));
+        const maxD = format(Math.min(0.2 * t, 1));
+        if (h <= maxB) {
+            result = 'Kategori B';
+            range = `h ≤ ${maxB}`;
+        } else if (h <= maxC) {
+            result = 'Kategori C';
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
+            result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
+        }
+    }
+
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('sideNotchQualityLevel');
+    const qualityResult = document.getElementById('sideNotchQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
+}
 		function calculateShrinkageGroove() {
-            const t = parseFloat(document.getElementById('shrinkageThickness').value);
-            const h = parseFloat(document.getElementById('shrinkageHeight').value);
+    const t = parseFloat(document.getElementById('shrinkageThickness').value);
+    const h = parseFloat(document.getElementById('shrinkageHeight').value);
 
-            if (isNaN(t) || isNaN(h)) {
-                alert('Indtast venligst alle værdier korrekt.');
-                return;
-            }
+    if (isNaN(t) || isNaN(h)) {
+        alert('Indtast venligst alle værdier korrekt.');
+        return;
+    }
 
-            let result = 'Ikke tilladt';
+    let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
 
-            if (t <= 3) {
-                if (h <= 0.1 * t) {
-                    result = 'Kategori C';
-                }
-                if (h <= 0.1 * t + 0.2) {
-                    result = 'Kategori D';
-                }
-            } else {
-                if (h <= Math.min(0.05 * t, 0.5)) {
-                    result = 'Kategori B';
-                } else if (h <= Math.min(0.1 * t, 1)) {
-                    result = 'Kategori C';
-                } else if (h <= Math.min(0.2 * t, 2)) {
-                    result = 'Kategori D';
-                }
-            }
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
+    }
 
-            alert(`Resultat: ${result}`);
+    if (t <= 3) {
+        const maxC = format(0.1 * t);
+        const maxD = format(0.1 * t + 0.2);
+        if (h <= maxC) {
+            result = 'Kategori C';
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
+            result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
+    } else {
+        const maxB = format(Math.min(0.05 * t, 0.5));
+        const maxC = format(Math.min(0.1 * t, 1));
+        const maxD = format(Math.min(0.2 * t, 2));
+        if (h <= maxB) {
+            result = 'Kategori B';
+            range = `h ≤ ${maxB}`;
+        } else if (h <= maxC) {
+            result = 'Kategori C';
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
+            result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
+        }
+    }
+
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('shrinkageQualityLevel');
+    const qualityResult = document.getElementById('shrinkageQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
+}
 		function calculateOvervulst() {
     const h = parseFloat(document.getElementById('overvulstHeight').value);
     const b = parseFloat(document.getElementById('overvulstWidth').value);
@@ -226,16 +326,38 @@
     }
 
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
 
-    if (h <= Math.min(0.1 * b + 1, 5)) {
-        result = 'Kategori B';
-    } else if (h <= Math.min(0.15 * b + 1, 7)) {
-        result = 'Kategori C';
-    } else if (h <= Math.min(0.25 * b + 1, 10)) {
-        result = 'Kategori D';
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
     }
 
-    alert(`Resultat: ${result}`);
+    const maxB = format(Math.min(0.1 * b + 1, 5));
+    const maxC = format(Math.min(0.15 * b + 1, 7));
+    const maxD = format(Math.min(0.25 * b + 1, 10));
+
+    if (h <= maxB) {
+        result = 'Kategori B';
+        range = `h ≤ ${maxB}`;
+    } else if (h <= maxC) {
+        result = 'Kategori C';
+        range = `h ≤ ${maxC}`;
+    } else if (h <= maxD) {
+        result = 'Kategori D';
+        range = `h ≤ ${maxD}`;
+    }
+
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('overvulstQualityLevel');
+    const qualityResult = document.getElementById('overvulstQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
 }
 		function calculateKonveks() {
     const h = parseFloat(document.getElementById('konveksHeight').value);
@@ -247,16 +369,38 @@
     }
 
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
 
-    if (h <= Math.min(0.1 * b + 1, 3)) {
-        result = 'Kategori B';
-    } else if (h <= Math.min(0.15 * b + 1, 4)) {
-        result = 'Kategori C';
-    } else if (h <= Math.min(0.25 * b + 1, 5)) {
-        result = 'Kategori D';
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
     }
 
-    alert(`Resultat: ${result}`);
+    const maxB = format(Math.min(0.1 * b + 1, 3));
+    const maxC = format(Math.min(0.15 * b + 1, 4));
+    const maxD = format(Math.min(0.25 * b + 1, 5));
+
+    if (h <= maxB) {
+        result = 'Kategori B';
+        range = `h ≤ ${maxB}`;
+    } else if (h <= maxC) {
+        result = 'Kategori C';
+        range = `h ≤ ${maxC}`;
+    } else if (h <= maxD) {
+        result = 'Kategori D';
+        range = `h ≤ ${maxD}`;
+    }
+
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('konveksQualityLevel');
+    const qualityResult = document.getElementById('konveksQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
 }
 		function calculateGennemloeb() {
     const h = parseFloat(document.getElementById('gennemloebHeight').value);
@@ -269,26 +413,55 @@
     }
 
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
+
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
+    }
 
     if (t <= 3) {
-        if (h <= 0.1 * b + 1) {
+        const maxB = format(0.1 * b + 1);
+        const maxC = format(0.3 * b + 1);
+        const maxD = format(0.6 * b + 1);
+
+        if (h <= maxB) {
             result = 'Kategori B';
-        } else if (h <= 0.3 * b + 1) {
+            range = `h ≤ ${maxB}`;
+        } else if (h <= maxC) {
             result = 'Kategori C';
-        } else if (h <= 0.6 * b + 1) {
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
             result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
     } else {
-        if (h <= Math.min(0.2 * b + 1, 3)) {
+        const maxB = format(Math.min(0.2 * b + 1, 3));
+        const maxC = format(Math.min(0.45 * b + 1, 4));
+        const maxD = format(Math.min(1 * b + 1, 5));
+
+        if (h <= maxB) {
             result = 'Kategori B';
-        } else if (h <= Math.min(0.45 * b + 1, 4)) {
+            range = `h ≤ ${maxB}`;
+        } else if (h <= maxC) {
             result = 'Kategori C';
-        } else if (h <= Math.min(1 * b + 1, 5)) {
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
             result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
     }
 
-    alert(`Resultat: ${result}`);
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('gennemloebQualityLevel');
+    const qualityResult = document.getElementById('gennemloebQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
 }
 		function calculateForkertOvergang() {
     const a = parseFloat(document.getElementById('overgangAngle').value);
@@ -300,26 +473,43 @@
     }
 
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
 
     if (weldType === 'butt') { // Stumpsøm
         if (a >= 150) {
             result = 'Kategori B';
+            range = `a ≥ 150°`;
         } else if (a >= 110) {
             result = 'Kategori C';
+            range = `a ≥ 110°`;
         } else if (a >= 90) {
             result = 'Kategori D';
+            range = `a ≥ 90°`;
         }
     } else if (weldType === 'fillet') { // Kantsøm
         if (a >= 110) {
             result = 'Kategori B';
+            range = `a ≥ 110°`;
         } else if (a >= 100) {
             result = 'Kategori C';
+            range = `a ≥ 100°`;
         } else if (a >= 90) {
             result = 'Kategori D';
+            range = `a ≥ 90°`;
         }
     }
 
-    alert(`Resultat: ${result}`);
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('forkertOvergangQualityLevel');
+    const qualityResult = document.getElementById('forkertOvergangQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
 }
 		function calculateOverloeb() {
     const h = parseFloat(document.getElementById('overloebHeight').value);
@@ -331,14 +521,33 @@
     }
 
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
+
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
+    }
+
+    const maxD = format(0.2 * b);
 
     if (h === 0) {
         result = 'Kategori B';
-    } else if (h <= 0.2 * b) {
+        range = `h = 0`;
+    } else if (h <= maxD) {
         result = 'Kategori D';
+        range = `h ≤ ${maxD}`;
     }
 
-    alert(`Resultat: ${result}`);
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('overloebQualityLevel');
+    const qualityResult = document.getElementById('overloebQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
 }
 		function calculateNedloeb() {
     const h = parseFloat(document.getElementById('nedloebHeight').value);
@@ -350,26 +559,52 @@
     }
 
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
+
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
+    }
 
     if (h === 0) {
         result = 'Kategori B';
+        range = `h = 0`;
     } else if (t <= 3) {
-        if (h <= 0.1 * t) {
+        const maxC = format(0.1 * t);
+        const maxD = format(0.25 * t);
+        if (h <= maxC) {
             result = 'Kategori C';
-        } else if (h <= 0.25 * t) {
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
             result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
     } else {
-        if (h <= Math.min(0.05 * t, 0.5)) {
+        const maxB = format(Math.min(0.05 * t, 0.5));
+        const maxC = format(Math.min(0.1 * t, 1));
+        const maxD = format(Math.min(0.25 * t, 2));
+        if (h <= maxB) {
             result = 'Kategori B';
-        } else if (h <= Math.min(0.1 * t, 1)) {
+            range = `h ≤ ${maxB}`;
+        } else if (h <= maxC) {
             result = 'Kategori C';
-        } else if (h <= Math.min(0.25 * t, 2)) {
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
             result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
     }
 
-    alert(`Resultat: ${result}`);
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('nedloebQualityLevel');
+    const qualityResult = document.getElementById('nedloebQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
 }
 		function calculateUligeKatetre() {
     const z1 = parseFloat(document.getElementById('uligeZ1').value);
@@ -383,16 +618,41 @@
 
     const h = Math.abs(z1 - z2); // Sørg for positiv værdi for h
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
 
-    if (h <= 0.15 * aA + 1.5) {
-        result = 'Kategori B';
-    } else if (h <= 0.15 * aA + 2) {
-        result = 'Kategori C';
-    } else if (h <= 0.2 * aA + 2) {
-        result = 'Kategori D';
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
     }
 
-    alert(`Resultat: ${result}`);
+    const maxB = format(0.15 * aA + 1.5);
+    const maxC = format(0.15 * aA + 2);
+    const maxD = format(0.2 * aA + 2);
+
+    if (h <= maxB) {
+        result = 'Kategori B';
+        range = `h ≤ ${maxB}`;
+    } else if (h <= maxC) {
+        result = 'Kategori C';
+        range = `h ≤ ${maxC}`;
+    } else if (h <= maxD) {
+        result = 'Kategori D';
+        range = `h ≤ ${maxD}`;
+    }
+
+    // Vis kvalitetsniveau, grænseværdier og beregnet h
+    const qualityLevel = document.getElementById('uligeKatetreQualityLevel');
+    const qualityResult = document.getElementById('uligeKatetreQualityResult');
+    const calculatedH = document.getElementById('uligeKatetreCalculatedH');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        calculatedH.textContent = `Beregnet h: ${format(h)}`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        calculatedH.textContent = '';
+        qualityLevel.style.display = 'block';
+    }
 }
 		function calculateIndadhvaelving() {
     const h = parseFloat(document.getElementById('indadhvaelvingHeight').value);
@@ -404,26 +664,52 @@
     }
 
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
+
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
+    }
 
     if (h === 0) {
         result = 'Kategori B';
+        range = `h = 0`;
     } else if (t <= 3) {
-        if (h <= 0.1 * t) {
+        const maxC = format(0.1 * t);
+        const maxD = format(0.1 * t + 0.2);
+        if (h <= maxC) {
             result = 'Kategori C';
-        } else if (h <= 0.1 * t + 0.2) {
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
             result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
     } else {
-        if (h <= Math.min(0.05 * t, 0.5)) {
+        const maxB = format(Math.min(0.05 * t, 0.5));
+        const maxC = format(Math.min(0.1 * t, 1));
+        const maxD = format(Math.min(0.2 * t, 2));
+        if (h <= maxB) {
             result = 'Kategori B';
-        } else if (h <= Math.min(0.1 * t, 1)) {
+            range = `h ≤ ${maxB}`;
+        } else if (h <= maxC) {
             result = 'Kategori C';
-        } else if (h <= Math.min(0.2 * t, 2)) {
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
             result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
     }
 
-    alert(`Resultat: ${result}`);
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('indadhvaelvingQualityLevel');
+    const qualityResult = document.getElementById('indadhvaelvingQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
 }
 function calculateUtilstraekkeligtAMaal() {
     const t = parseFloat(document.getElementById('utilstraekkeligtThickness').value);
@@ -442,29 +728,51 @@ function calculateUtilstraekkeligtAMaal() {
 
     const h = Math.abs(a - aA); // Sørg for positiv værdi for h
     const tolerance = 1e-10; // Tolerance til håndtering af afrundingsfejl
-    console.log(`h: ${h}`); // Debugging: Vis h
-
     let result = 'Ikke tilladt';
+    let range = ''; // Beregnede grænseværdier
 
-    if (h <= 0 + tolerance) { // Tjek for præcist 0 med tolerance
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
+    }
+
+    if (h <= 0 + tolerance) {
         result = 'Kategori B';
+        range = `h = 0`;
     } else if (t <= 3) {
-        if (h <= 0.2 + tolerance) {
+        const maxC = format(0.2);
+        const maxD = format(0.1 * a + 0.2);
+        if (h <= maxC) {
             result = 'Kategori C';
-        } else if (h <= 0.1 * a + 0.2 + tolerance) {
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
             result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
     } else {
-        if (h <= Math.min(0.1 * a + 0.3, 1) + tolerance) {
+        const maxC = format(Math.min(0.1 * a + 0.3, 1));
+        const maxD = format(Math.min(0.2 * a + 0.3, 2));
+        if (h <= maxC) {
             result = 'Kategori C';
-        } else if (h <= Math.min(0.2 * a + 0.3, 2) + tolerance) {
+            range = `h ≤ ${maxC}`;
+        } else if (h <= maxD) {
             result = 'Kategori D';
+            range = `h ≤ ${maxD}`;
         }
     }
 
-    alert(`Resultat: ${result}`);
+    // Vis kvalitetsniveau og grænseværdier
+    const qualityLevel = document.getElementById('utilstraekkeligtQualityLevel');
+    const qualityResult = document.getElementById('utilstraekkeligtQualityResult');
+
+    if (result) {
+        qualityResult.textContent = `${result} (${range})`;
+        qualityLevel.style.display = 'block';
+    } else {
+        qualityResult.textContent = 'Ikke tilladt';
+        qualityLevel.style.display = 'block';
+    }
 }
-function calculateUforholdsmaessigtAMaal() {
+		function calculateUforholdsmaessigtAMaal() {
     const a = parseFloat(document.getElementById('uforholdsmaessigtA').value);
     const aA = parseFloat(document.getElementById('uforholdsmaessigtAA').value);
 
@@ -509,116 +817,136 @@ function calculateUforholdsmaessigtAMaal() {
     </header>
 
     <ul class="menu">
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Åben Kraterpore (1.4)
+        <img src="https://i.imgur.com/e8xLEXU.png" alt="Diagram af Åben Kraterpore">
+    </div>
+    <div class="content">
+        <label for="weldType">Vælg svejsetype:</label><br>
+        <select id="weldType" onchange="toggleAAField()">
+            <option value="">-- Vælg --</option>
+            <option value="butt">Stumpsøm</option>
+            <option value="fillet">Kantsøm</option>
+        </select><br><br>
+
+        <label for="thickness">Tykkelse (t) af materiale (mm):</label><br>
+        <input type="number" id="thickness" placeholder="Indtast tykkelse"><br><br>
+
+        <label for="depth">Dybde (h) af kraterpore (mm):</label><br>
+        <input type="number" id="depth" placeholder="Indtast dybde"><br><br>
+
+        <label for="width">Bredde (d) af kraterpore (mm):</label><br>
+        <input type="number" id="width" placeholder="Indtast bredde"><br><br>
+
+        <div id="aAField" style="display: none;">
+            <label for="aA">Afmålt A-mål (aA) (mm):</label><br>
+            <input type="number" id="aA" placeholder="Indtast A-mål"><br><br>
+        </div>
+
+        <button onclick="calculateCraterPore()">Beregn</button>
+
+        <div id="qualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="qualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
+    </div>
+</li>
         <li class="menu-item">
-            <div class="menu-item-header" onclick="toggleContent(event)">
-                Åben Kraterpore (1.4)
-            </div>
-			<img src="https://i.imgur.com/e8xLEXU.png" alt="Diagram af Åben Kraterpore">
-            <div class="content">
-                <label for="weldType">Vælg svejsetype:</label><br>
-                <select id="weldType" onchange="selectWeldType()">
-                    <option value="">-- Vælg --</option>
-                    <option value="butt">Stumpsøm</option>
-                    <option value="fillet">Kantsøm</option>
-                </select><br><br>
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Sidekærv (1.7)
+        <img src="https://i.imgur.com/CWEyBYH.png" alt="Diagram af Sidekærv">
+    </div>
+    <div class="content">
+        <h2>Kontinuert sidekærv eller Lokal Sidekærv (Korte svejsefejl)</h2>
 
-                <div id="parameters" class="hidden">
-                    <div id="thicknessField">
-                        <label for="thickness">Tykkelse (t) af materiale (mm):</label><br>
-                        <input type="number" id="thickness" placeholder="Indtast tykkelse"><br><br>
-                    </div>
+        <label for="sideNotchThickness">Tykkelse (t) af materiale (mm):</label><br>
+        <input type="number" id="sideNotchThickness" placeholder="Indtast tykkelse"><br><br>
 
-                    <label for="depth">Dybde (h) af kraterpore (mm):</label><br>
-                    <input type="number" id="depth" placeholder="Indtast dybde"><br><br>
+        <label for="sideNotchHeight">Højde (h) af sidekærv (mm):</label><br>
+        <input type="number" id="sideNotchHeight" placeholder="Indtast højde"><br><br>
 
-                    <label for="width">Bredde (d) af kraterpore (mm):</label><br>
-                    <input type="number" id="width" placeholder="Indtast bredde"><br><br>
+        <button onclick="calculateSideNotch()">Beregn</button>
 
-                    <div id="aAField" class="hidden">
-                        <label for="aA">Afmålt A-mål (aA) (mm):</label><br>
-                        <input type="number" id="aA" placeholder="Indtast A-mål"><br><br>
-                    </div>
+        <div id="sideNotchQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="sideNotchQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
+    </div>
+</li>
+<li class="menu-item">
+    <div class="menu-item-header" onclick="toggleContent(event)">
+        Krympefuge(rodkærv)(1.8)
+        <img src="https://i.imgur.com/BhkrLfe.png" alt="Diagram af Krympefuge">
+    </div>
+    <div class="content">
+        <h2>Krympefuge (Rodkærv)</h2>
 
-                    <button onclick="calculateCraterPore()">Beregn</button>
-                </div>
+        <label for="shrinkageThickness">Tykkelse (t) af materiale (mm):</label><br>
+        <input type="number" id="shrinkageThickness" placeholder="Indtast tykkelse"><br><br>
 
+        <label for="shrinkageHeight">Højde (h) af krympefuge (mm):</label><br>
+        <input type="number" id="shrinkageHeight" placeholder="Indtast højde"><br><br>
 
-            </div>
-        </li>
-        <li class="menu-item">
-            <div class="menu-item-header" onclick="toggleContent(event)">
-                Sidekærv (1.7)
-            </div>
-			<img src="https://i.imgur.com/CWEyBYH.png" alt='Diagram af Sidekærv'>
-            <div class="content">
-                <h2>Kontinuert sidekærv eller Lokal Sidekærv (Korte svejsefejl)</h2>
-                <label for="sideNotchThickness">Tykkelse (t) af materiale (mm):</label><br>
-                <input type="number" id="sideNotchThickness" placeholder="Indtast tykkelse"><br><br>
+        <button onclick="calculateShrinkageGroove()">Beregn</button>
 
-                <label for="sideNotchHeight">Højde (h) af sidekærv (mm):</label><br>
-                <input type="number" id="sideNotchHeight" placeholder="Indtast højde"><br><br>
-
-                <button onclick="calculateSideNotch()">Beregn</button>
-            </div>
-        </li>
-		<li class="menu-item">
-			<div class="menu-item-header" onclick="toggleContent(event)">
-				Krympefuge(rodkærv)(1.8)
-			</div>
-			<img src="https://i.imgur.com/BhkrLfe.png" alt="Diagram af Krympefuge">
-			<div class="content">
-				<h2>Krympefuge (Rodkærv)</h2>
-				<label for="shrinkageThickness">Tykkelse (t) af materiale (mm):</label><br>
-				<input type="number" id="shrinkageThickness" placeholder="Indtast tykkelse"><br><br>
-
-				<label for="shrinkageHeight">Højde (h) af krympefuge (mm):</label><br>
-				<input type="number" id="shrinkageHeight" placeholder="Indtast højde"><br><br>
-
-				<button onclick="calculateShrinkageGroove()">Beregn</button><br><br>
-			</div>
-		</li>
+        <div id="shrinkageQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="shrinkageQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
+    </div>
+</li>
 		<li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Overvulst Stumpsøm (1.9)
+        <img src="https://i.imgur.com/nrUAcUe.png" alt="Diagram af Overvulst">
     </div>
-	        <img src="https://i.imgur.com/nrUAcUe.png" alt="Diagram af Overvulst">
+
     <div class="content">
         <h2>Overvulst Stumpsøm</h2>
+
         <label for="overvulstHeight">Højde (h) af overvulst (mm):</label><br>
         <input type="number" id="overvulstHeight" placeholder="Indtast højde"><br><br>
 
         <label for="overvulstWidth">Bredde (b) af overvulst (mm):</label><br>
         <input type="number" id="overvulstWidth" placeholder="Indtast bredde"><br><br>
 
-        <button onclick="calculateOvervulst()">Beregn</button><br><br>
+        <button onclick="calculateOvervulst()">Beregn</button>
 
-
+        <div id="overvulstQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="overvulstQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
     </div>
 </li>
 	<li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Konveks sømoverflade (1.10)
+        <img src="https://i.imgur.com/dtfGTAt.png" alt="Diagram af Konveks sømoverflade">
     </div>
-	<img src="https://i.imgur.com/dtfGTAt.png" alt="Diagram af Konveks sømoverflade">
+
     <div class="content">
         <h2>Konveks sømoverflade</h2>
+
         <label for="konveksHeight">Højde (h) af sømoverflade (mm):</label><br>
         <input type="number" id="konveksHeight" placeholder="Indtast højde"><br><br>
 
         <label for="konveksWidth">Bredde (b) af sømoverflade (mm):</label><br>
         <input type="number" id="konveksWidth" placeholder="Indtast bredde"><br><br>
 
-        <button onclick="calculateKonveks()">Beregn</button><br><br>
+        <button onclick="calculateKonveks()">Beregn</button>
+
+        <div id="konveksQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="konveksQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Gennemløb (1.11)
+        <img src="https://i.imgur.com/uDtmMJq.png" alt="Diagram af Gennemløb">
     </div>
-	<img src="https://i.imgur.com/uDtmMJq.png" alt="Diagram af Gennemløb">
+
     <div class="content">
         <h2>Gennemløb</h2>
-		<label for="gennemloebThickness">Tykkelse (t) af materiale (mm):</label><br>
+
+        <label for="gennemloebThickness">Tykkelse (t) af materiale (mm):</label><br>
         <input type="number" id="gennemloebThickness" placeholder="Indtast tykkelse"><br><br>
 
         <label for="gennemloebHeight">Højde (h) af gennemløb (mm):</label><br>
@@ -627,17 +955,22 @@ function calculateUforholdsmaessigtAMaal() {
         <label for="gennemloebWidth">Bredde (b) af gennemløb (mm):</label><br>
         <input type="number" id="gennemloebWidth" placeholder="Indtast bredde"><br><br>
 
-        <button onclick="calculateGennemloeb()">Beregn</button><br><br>
+        <button onclick="calculateGennemloeb()">Beregn</button>
 
+        <div id="gennemloebQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="gennemloebQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Forkert overgang (1.12)
+        <img src="https://i.imgur.com/XBKdEjU.png" alt="Diagram af Forkert overgang">
     </div>
-	        <img src="https://i.imgur.com/XBKdEjU.png" alt="Diagram af Forkert overgang">
+
     <div class="content">
         <h2>Forkert overgang (mellem grundmaterialets overflade og svejsesøm)</h2>
+
         <label for="overgangWeldType">Vælg svejsetype:</label><br>
         <select id="overgangWeldType">
             <option value="">-- Vælg --</option>
@@ -648,52 +981,66 @@ function calculateUforholdsmaessigtAMaal() {
         <label for="overgangAngle">Vinkel (a) af overgang (grader):</label><br>
         <input type="number" id="overgangAngle" placeholder="Indtast vinkel"><br><br>
 
-        <button onclick="calculateForkertOvergang()">Beregn</button><br><br>
+        <button onclick="calculateForkertOvergang()">Beregn</button>
 
+        <div id="forkertOvergangQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="forkertOvergangQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Overløb af svejsemetal (1.13)
+        <img src="https://i.imgur.com/rKhjHuO.png" alt="Diagram af Overløb af svejsemetal">
     </div>
-	        <img src="https://i.imgur.com/rKhjHuO.png" alt="Diagram af Overløb af svejsemetal">
+
     <div class="content">
         <h2>Overløb af svejsemetal</h2>
+
         <label for="overloebHeight">Højde (h) af svejsemetal (mm):</label><br>
         <input type="number" id="overloebHeight" placeholder="Indtast højde"><br><br>
 
         <label for="overloebWidth">Bredde (b) af svejsemetal (mm):</label><br>
         <input type="number" id="overloebWidth" placeholder="Indtast bredde"><br><br>
 
-        <button onclick="calculateOverloeb()">Beregn</button><br><br>
+        <button onclick="calculateOverloeb()">Beregn</button>
 
+        <div id="overloebQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="overloebQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Nedløbet Svejsemetal og Manglende opfyldning (1.14)
+        <img src="https://i.imgur.com/6uWLu2Y.png" alt="Diagram af Nedløbet Svejsemetal og Manglende opfyldning">
     </div>
-	<img src="https://i.imgur.com/6uWLu2Y.png" alt="Diagram af Nedløbet Svejsemetal og Manglende opfyldning">
+
     <div class="content">
         <h2>Nedløbet Svejsemetal og Manglende opfyldning</h2>
+
         <label for="nedloebThickness">Tykkelse (t) af materiale (mm):</label><br>
         <input type="number" id="nedloebThickness" placeholder="Indtast tykkelse"><br><br>
 
         <label for="nedloebHeight">Højde (h) af nedløbet svejsemetal (mm):</label><br>
         <input type="number" id="nedloebHeight" placeholder="Indtast højde"><br><br>
 
-        <button onclick="calculateNedloeb()">Beregn</button><br><br>
+        <button onclick="calculateNedloeb()">Beregn</button>
 
-
+        <div id="nedloebQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="nedloebQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Ulige store katetre i kantsøm (1.16)
+        <img src="https://i.imgur.com/IvMuumF.png" alt="Diagram af Ulige store katetre i kantsøm">
     </div>
-	        <img src="https://i.imgur.com/IvMuumF.png" alt="Diagram af Ulige store katetre i kantsøm">
+
     <div class="content">
         <h2>Ulige store katetre i kantsøm</h2>
+
         <label for="uligeZ1">Benlængde z1 (mm):</label><br>
         <input type="number" id="uligeZ1" placeholder="Indtast z1"><br><br>
 
@@ -703,35 +1050,45 @@ function calculateUforholdsmaessigtAMaal() {
         <label for="uligeAA">Målt a-mål (aA) (mm):</label><br>
         <input type="number" id="uligeAA" placeholder="Indtast aA"><br><br>
 
-        <button onclick="calculateUligeKatetre()">Beregn</button><br><br>
+        <button onclick="calculateUligeKatetre()">Beregn</button>
+
+        <div id="uligeKatetreQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="uligeKatetreQualityResult" style="font-weight: bold; color: black;"></span><br>
+            <span id="uligeKatetreCalculatedH" style="color: black;"></span>
+        </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Indadhvælving i roden (1.17)
+        <img src="https://i.imgur.com/Nu0UhcX.png" alt="Diagram af Indadhvælving i roden">
     </div>
-	        <img src="https://i.imgur.com/Nu0UhcX.png" alt="Diagram af Indadhvælving i roden">
+
     <div class="content">
         <h2>Indadhvælving i roden</h2>
+
         <label for="indadhvaelvingThickness">Tykkelse (t) af materiale (mm):</label><br>
         <input type="number" id="indadhvaelvingThickness" placeholder="Indtast tykkelse"><br><br>
 
         <label for="indadhvaelvingHeight">Højde (h) af indadhvælving (mm):</label><br>
         <input type="number" id="indadhvaelvingHeight" placeholder="Indtast højde"><br><br>
 
-        <button onclick="calculateIndadhvaelving()">Beregn</button><br><br>
+        <button onclick="calculateIndadhvaelving()">Beregn</button>
 
-
+        <div id="indadhvaelvingQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="indadhvaelvingQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Utilstrækkeligt a-mål (1.20)
-    </div>
-	
         <img src="https://i.imgur.com/zsSsFJr.png" alt="Diagram af Utilstrækkeligt a-mål">
+    </div>
+
     <div class="content">
         <h2>Utilstrækkeligt a-mål</h2>
+
         <label for="utilstraekkeligtThickness">Tykkelse (t) af materiale (mm):</label><br>
         <input type="number" id="utilstraekkeligtThickness" placeholder="Indtast tykkelse"><br><br>
 
@@ -741,15 +1098,19 @@ function calculateUforholdsmaessigtAMaal() {
         <label for="utilstraekkeligtAA">Målt a-mål (aA) (mm):</label><br>
         <input type="number" id="utilstraekkeligtAA" placeholder="Indtast målt a-mål"><br><br>
 
-        <button onclick="calculateUtilstraekkeligtAMaal()">Beregn</button><br><br>
+        <button onclick="calculateUtilstraekkeligtAMaal()">Beregn</button>
 
+        <div id="utilstraekkeligtQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="utilstraekkeligtQualityResult" style="font-weight: bold; color: black;"></span>
+        </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Uforholdsmæssigt stort a-mål (1.21)
+		<img src="https://i.imgur.com/ezA48iF.png" alt="Diagram af Uforholdsmæssigt stort a-mål">
     </div>
-	        <img src="https://i.imgur.com/ezA48iF.png" alt="Diagram af Uforholdsmæssigt stort a-mål">
+	        
     <div class="content">
         <h2>Uforholdsmæssigt stort a-mål</h2>
         <label for="uforholdsmaessigtA">Nominelt a-mål (a) (mm):</label><br>
