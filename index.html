@@ -711,7 +711,7 @@
         qualityLevel.style.display = 'block';
     }
 }
-function calculateUtilstraekkeligtAMaal() {
+		function calculateUtilstraekkeligtAMaal() {
     const t = parseFloat(document.getElementById('utilstraekkeligtThickness').value);
     const a = parseFloat(document.getElementById('utilstraekkeligtA').value);
     const aA = parseFloat(document.getElementById('utilstraekkeligtAA').value);
@@ -760,19 +760,22 @@ function calculateUtilstraekkeligtAMaal() {
         }
     }
 
-    // Vis kvalitetsniveau og grænseværdier
+    // Vis kvalitetsniveau, grænseværdier og beregnet h
     const qualityLevel = document.getElementById('utilstraekkeligtQualityLevel');
     const qualityResult = document.getElementById('utilstraekkeligtQualityResult');
+    const calculatedH = document.getElementById('utilstraekkeligtCalculatedH');
 
     if (result) {
         qualityResult.textContent = `${result} (${range})`;
+        calculatedH.textContent = `Beregnet h: ${format(h)}`;
         qualityLevel.style.display = 'block';
     } else {
         qualityResult.textContent = 'Ikke tilladt';
+        calculatedH.textContent = '';
         qualityLevel.style.display = 'block';
     }
 }
-		function calculateUforholdsmaessigtAMaal() {
+function calculateUforholdsmaessigtAMaal() {
     const a = parseFloat(document.getElementById('uforholdsmaessigtA').value);
     const aA = parseFloat(document.getElementById('uforholdsmaessigtAA').value);
 
@@ -787,27 +790,35 @@ function calculateUtilstraekkeligtAMaal() {
     }
 
     const h = Math.abs(aA - a); // Sørg for positiv værdi for h
-    console.log(`h: ${h}`); // Debugging: Vis h
-
-    let result = 'Kategori D'; // Standard som tilladt
-
-    const maxB = Math.min(0.15 * a + 1, 3); // Grænse for kategori B
-    const maxC = Math.min(0.2 * a + 1, 4); // Grænse for kategori C
     const tolerance = 1e-10; // Tolerance til håndtering af afrundingsfejl
-    console.log(`maxB: ${maxB}, maxC: ${maxC}`); // Debugging: Vis grænser
+    let result = 'Kategori D'; // Standard som tilladt
+    let range = ''; // Beregnede grænseværdier
 
-    if (h <= maxB + tolerance) {
-        console.log('Tildeler kategori B'); // Debugging
-        result = 'Kategori B';
-    } else if (h <= maxC + tolerance) {
-        console.log('Tildeler kategori C'); // Debugging
-        result = 'Kategori C';
-    } else {
-        console.log('Tildeler kategori D'); // Debugging
-        result = 'Kategori D';
+    function format(value) {
+        return parseFloat(value.toFixed(2)); // Maks. 2 decimaler
     }
 
-    alert(`Resultat: ${result}`);
+    const maxB = format(Math.min(0.15 * a + 1, 3)); // Grænse for kategori B
+    const maxC = format(Math.min(0.2 * a + 1, 4)); // Grænse for kategori C
+
+    if (h <= maxB + tolerance) {
+        result = 'Kategori B';
+        range = `h ≤ ${maxB}`;
+    } else if (h <= maxC + tolerance) {
+        result = 'Kategori C';
+        range = `h ≤ ${maxC}`;
+    } else {
+        range = `h > ${maxC}`;
+    }
+
+    // Vis kvalitetsniveau, grænseværdier og beregnet h
+    const qualityLevel = document.getElementById('uforholdsmaessigtQualityLevel');
+    const qualityResult = document.getElementById('uforholdsmaessigtQualityResult');
+    const calculatedH = document.getElementById('uforholdsmaessigtCalculatedH');
+
+    qualityResult.textContent = `${result} (${range})`;
+    calculatedH.textContent = `Beregnet h: ${format(h)}`;
+    qualityLevel.style.display = 'block';
 }
 	</script>
 </head>
@@ -1101,26 +1112,32 @@ function calculateUtilstraekkeligtAMaal() {
         <button onclick="calculateUtilstraekkeligtAMaal()">Beregn</button>
 
         <div id="utilstraekkeligtQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
-            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="utilstraekkeligtQualityResult" style="font-weight: bold; color: black;"></span>
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="utilstraekkeligtQualityResult" style="font-weight: bold; color: black;"></span><br>
+            <span id="utilstraekkeligtCalculatedH" style="color: black;"></span>
         </div>
     </div>
 </li>
 <li class="menu-item">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Uforholdsmæssigt stort a-mål (1.21)
-		<img src="https://i.imgur.com/ezA48iF.png" alt="Diagram af Uforholdsmæssigt stort a-mål">
+        <img src="https://i.imgur.com/ezA48iF.png" alt="Diagram af Uforholdsmæssigt stort a-mål">
     </div>
-	        
+
     <div class="content">
         <h2>Uforholdsmæssigt stort a-mål</h2>
+
         <label for="uforholdsmaessigtA">Nominelt a-mål (a) (mm):</label><br>
         <input type="number" id="uforholdsmaessigtA" placeholder="Indtast a-mål"><br><br>
 
         <label for="uforholdsmaessigtAA">Målt a-mål (aA) (mm):</label><br>
         <input type="number" id="uforholdsmaessigtAA" placeholder="Indtast målt a-mål"><br><br>
 
-        <button onclick="calculateUforholdsmaessigtAMaal()">Beregn</button><br><br>
+        <button onclick="calculateUforholdsmaessigtAMaal()">Beregn</button>
 
+        <div id="uforholdsmaessigtQualityLevel" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; display: none; background-color: #f9f9f9; text-align: center;">
+            <strong style="color: black;">Kvalitetsniveau:</strong> <span id="uforholdsmaessigtQualityResult" style="font-weight: bold; color: black;"></span><br>
+            <span id="uforholdsmaessigtCalculatedH" style="color: black;"></span>
+        </div>
     </div>
 </li>
     </ul>
