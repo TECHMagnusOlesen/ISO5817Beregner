@@ -16,6 +16,29 @@
             color: white;
             padding: 1rem;
             text-align: center;
+            position: relative;
+        }
+
+        #searchContainer {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        #searchInput {
+            padding: 10px;
+            width: 50%;
+            max-width: 400px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #noResults {
+            text-align: center;
+            margin-top: 20px;
+            color: red;
+            display: none;
         }
 
         .menu {
@@ -65,20 +88,21 @@
             max-width: 100%;
             height: auto;
         }
-		.menu-item.active {
-    background-color: #333; /* Mørkegrå baggrund */
-    color: white; /* Tekstfarve for kontrast */
-}
 
-.menu-item.active .menu-item-header {
-    background-color: #333; /* Mørkegrå baggrund for headeren */
-    color: white; /* Tekstfarve for kontrast */
-}
+        .menu-item.active {
+            background-color: #333;
+            color: white;
+        }
 
-.menu-item.active .content {
-    background-color: #444; /* En lidt lysere grå for indholdsområdet */
-    color: white; /* Tekstfarve for kontrast */
-}
+        .menu-item.active .menu-item-header {
+            background-color: #333;
+            color: white;
+        }
+
+        .menu-item.active .content {
+            background-color: #444;
+            color: white;
+        }
     </style>
     <script>
         function toggleContent(event) {
@@ -113,7 +137,29 @@
                 parameters.classList.add('hidden');
             }
         }
+function searchMenu() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const menuItems = document.querySelectorAll('.menu-item');
+    let hasResults = false;
 
+    menuItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        const tags = item.getAttribute('data-tags').toLowerCase();
+        if (text.includes(query) || tags.includes(query)) {
+            item.style.display = '';
+            hasResults = true;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+
+    const noResults = document.getElementById('noResults');
+    if (query && !hasResults) {
+        noResults.style.display = 'block';
+    } else {
+        noResults.style.display = 'none';
+    }
+}
 		function toggleAAField() {
     const weldType = document.getElementById('weldType').value;
     const aAField = document.getElementById('aAField');
@@ -827,8 +873,14 @@ function calculateUforholdsmaessigtAMaal() {
         <h1>ISO 5817 Beregner</h1>
     </header>
 
+    <div id="searchContainer">
+        <input type="text" id="searchInput" placeholder="Søg efter en kategori..." oninput="searchMenu()">
+    </div>
+
+    <div id="noResults">Ingen resultater fundet.</div>
+
     <ul class="menu">
-<li class="menu-item">
+<li class="menu-item" data-tags="kraterpore stumpsøm kantsøm kategori 1.4">>
     <div class="menu-item-header" onclick="toggleContent(event)">
         Åben Kraterpore (1.4)
         <img src="https://i.imgur.com/e8xLEXU.png" alt="Diagram af Åben Kraterpore">
@@ -862,7 +914,7 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-        <li class="menu-item">
+        <li class="menu-item" data-tags="lokal sidekærv kontinuert kærv side 1.7">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Sidekærv (1.7)
         <img src="https://i.imgur.com/CWEyBYH.png" alt="Diagram af Sidekærv">
@@ -883,7 +935,7 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="krympefuge krympe fuge rodkærv rod kærv 1.8">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Krympefuge(rodkærv)(1.8)
         <img src="https://i.imgur.com/BhkrLfe.png" alt="Diagram af Krympefuge">
@@ -904,12 +956,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-		<li class="menu-item">
+		<li class="menu-item" data-tags="Overvulst stumpsøm overhvælvet 1.9">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Overvulst Stumpsøm (1.9)
         <img src="https://i.imgur.com/nrUAcUe.png" alt="Diagram af Overvulst">
     </div>
-
     <div class="content">
         <h2>Overvulst Stumpsøm</h2>
 
@@ -926,12 +977,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-	<li class="menu-item">
+	<li class="menu-item" data-tags="konveks sømoverflade søm overflade for stor stort 1.10 Kantsøm">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Konveks sømoverflade (1.10)
         <img src="https://i.imgur.com/dtfGTAt.png" alt="Diagram af Konveks sømoverflade">
     </div>
-
     <div class="content">
         <h2>Konveks sømoverflade</h2>
 
@@ -948,12 +998,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="gennem løb gennemløb ned brænding nedbrænding underløb under Stumpsøm 1.11">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Gennemløb (1.11)
         <img src="https://i.imgur.com/uDtmMJq.png" alt="Diagram af Gennemløb">
     </div>
-
     <div class="content">
         <h2>Gennemløb</h2>
 
@@ -973,12 +1022,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="vinkel grader kantsøm stumpsøm 1.12">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Forkert overgang (1.12)
         <img src="https://i.imgur.com/XBKdEjU.png" alt="Diagram af Forkert overgang">
     </div>
-
     <div class="content">
         <h2>Forkert overgang (mellem grundmaterialets overflade og svejsesøm)</h2>
 
@@ -999,12 +1047,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="kold 1.13">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Overløb af svejsemetal (1.13)
         <img src="https://i.imgur.com/rKhjHuO.png" alt="Diagram af Overløb af svejsemetal">
     </div>
-
     <div class="content">
         <h2>Overløb af svejsemetal</h2>
 
@@ -1021,12 +1068,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="1.14">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Nedløbet Svejsemetal og Manglende opfyldning (1.14)
         <img src="https://i.imgur.com/6uWLu2Y.png" alt="Diagram af Nedløbet Svejsemetal og Manglende opfyldning">
     </div>
-
     <div class="content">
         <h2>Nedløbet Svejsemetal og Manglende opfyldning</h2>
 
@@ -1043,12 +1089,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="skæv kantsøm z mål zmål z-mål">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Ulige store katetre i kantsøm (1.16)
         <img src="https://i.imgur.com/IvMuumF.png" alt="Diagram af Ulige store katetre i kantsøm">
     </div>
-
     <div class="content">
         <h2>Ulige store katetre i kantsøm</h2>
 
@@ -1069,12 +1114,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="kærv dyb">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Indadhvælving i roden (1.17)
         <img src="https://i.imgur.com/Nu0UhcX.png" alt="Diagram af Indadhvælving i roden">
     </div>
-
     <div class="content">
         <h2>Indadhvælving i roden</h2>
 
@@ -1091,12 +1135,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="amål a mål for lille">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Utilstrækkeligt a-mål (1.20)
         <img src="https://i.imgur.com/zsSsFJr.png" alt="Diagram af Utilstrækkeligt a-mål">
     </div>
-
     <div class="content">
         <h2>Utilstrækkeligt a-mål</h2>
 
@@ -1117,12 +1160,11 @@ function calculateUforholdsmaessigtAMaal() {
         </div>
     </div>
 </li>
-<li class="menu-item">
+<li class="menu-item" data-tags="amål a mål for stort">
     <div class="menu-item-header" onclick="toggleContent(event)">
         Uforholdsmæssigt stort a-mål (1.21)
         <img src="https://i.imgur.com/ezA48iF.png" alt="Diagram af Uforholdsmæssigt stort a-mål">
     </div>
-
     <div class="content">
         <h2>Uforholdsmæssigt stort a-mål</h2>
 
